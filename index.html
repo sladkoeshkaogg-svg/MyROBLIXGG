@@ -3,226 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyBlox - Игровая Платформа</title>
+    <title>Exiblox - Игровая Платформа</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        /* Основные стили и Темная тема */
         :root {
             --bg-color: #121212;
             --nav-bg: #1e1e1e;
-            --card-bg: #252525;
             --accent: #00b0ff;
             --text-main: #ffffff;
-            --text-muted: #aaaaaa;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            display: flex;
+            overflow: hidden; /* Чтобы 3D холст не создавал прокрутку */
         }
 
-        /* Боковое меню */
-        .sidebar {
-            width: 250px;
-            background-color: var(--nav-bg);
-            height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
+        /* Окно авторизации (Модальное окно) */
+        #auth-modal {
             position: fixed;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--text-main);
-            margin-bottom: 40px;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-
-        .logo span { color: var(--accent); }
-
-        .nav-link {
-            display: block;
-            padding: 12px 15px;
-            color: var(--text-main);
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            transition: background 0.2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background-color: var(--card-bg);
-            border-left: 4px solid var(--accent);
-        }
-
-        /* Основной контент */
-        .main-content {
-            margin-left: 250px;
-            padding: 30px;
-            width: 100%;
-        }
-
-        h1 { margin-top: 0; }
-
-        /* Сетка игр */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 25px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .game-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-
-        .game-icon {
-            width: 100%;
-            height: 150px;
-            background-color: #333;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-size: 40px;
+            align-items: center;
+            z-index: 1000;
         }
 
-        .game-info { padding: 15px; }
-        .game-title { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
-        .game-stats { font-size: 12px; color: var(--text-muted); }
-
-        /* Окно плеера игры */
-        #game-player {
-            display: none;
-            background-color: var(--nav-bg);
+        .auth-box {
+            background: var(--nav-bg);
+            padding: 40px;
             border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .play-btn {
-            background-color: #00c853;
+        .auth-box input {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            background: #333;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background-color: var(--accent);
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 20px;
+            width: 100%;
+            margin-top: 10px;
         }
 
-        .play-btn:hover { background-color: #00e676; }
-        
-        #mini-game-area {
-            margin-top: 20px;
-            padding: 20px;
-            background: #111;
-            border-radius: 8px;
-            display: none;
+        .btn:hover { background-color: #0081cb; }
+
+        /* Интерфейс платформы */
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            display: none; /* Скрыто до авторизации */
+        }
+
+        /* Контейнер для 3D игры */
+        #game-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo">My<span>Blox</span></div>
-        <a href="#" class="nav-link active">🏠 Главная</a>
-        <a href="#" class="nav-link">🎮 Игры</a>
-        <a href="#" class="nav-link">👤 Профиль</a>
-        <a href="#" class="nav-link">⚙️ Настройки</a>
-    </div>
-
-    <div class="main-content">
-        <h1>Популярные режимы</h1>
-        
-        <div class="games-grid" id="games-container">
-            <div class="game-card" onclick="openGame('clicker', 'Super Clicker Simulator', '🚀')">
-                <div class="game-icon" style="background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);">🚀</div>
-                <div class="game-info">
-                    <div class="game-title">Super Clicker Simulator</div>
-                    <div class="game-stats">👍 95% | 👤 1.2k играют</div>
-                </div>
-            </div>
-
-            <div class="game-card" onclick="openGame('obby', 'Mega Fun Obby', '🏃')">
-                <div class="game-icon" style="background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);">🏃</div>
-                <div class="game-info">
-                    <div class="game-title">Mega Fun Obby</div>
-                    <div class="game-stats">👍 88% | 👤 500 играют</div>
-                </div>
-            </div>
-
-            <div class="game-card" onclick="openGame('tycoon', 'Developer Tycoon', '💻')">
-                <div class="game-icon" style="background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);">💻</div>
-                <div class="game-info">
-                    <div class="game-title">Developer Tycoon</div>
-                    <div class="game-stats">👍 92% | 👤 800 играют</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="game-player">
-            <h2 id="player-title">Название игры</h2>
-            <div style="font-size: 60px;" id="player-icon">🎮</div>
-            <button class="play-btn" onclick="startGame()">▶ ИГРАТЬ</button>
-            <button class="play-btn" style="background-color: #f44336; margin-left: 10px;" onclick="closeGame()">Закрыть</button>
-            
-            <div id="mini-game-area">
-                <h3 id="score-text">Очки: 0</h3>
-                <button style="padding: 20px; font-size: 24px; cursor: pointer;" onclick="addScore()">КЛИКАЙ!</button>
-            </div>
+    <div id="auth-modal">
+        <div class="auth-box">
+            <h2>Вход в аккаунт</h2>
+            <p style="font-size: 12px; color: #aaa;">Данные будут сохраняться в облаке</p>
+            <input type="text" id="username" placeholder="Имя пользователя">
+            <input type="password" id="password" placeholder="Пароль">
+            <button class="btn" onclick="login()">Войти / Играть</button>
         </div>
     </div>
+
+    <div id="ui-layer">
+        <h1 style="margin:0; text-shadow: 2px 2px 4px #000;">Exiblox Studio</h1>
+        <p id="player-name" style="text-shadow: 1px 1px 2px #000;">Игрок: Гость</p>
+        <button class="btn" onclick="addBlock()" style="width: auto;">+ Создать блок</button>
+    </div>
+
+    <div id="game-canvas"></div>
 
     <script>
-        let currentGameId = '';
-        let score = 0;
-
-        // Открытие страницы игры
-        function openGame(id, title, icon) {
-            document.getElementById('games-container').style.display = 'none';
-            document.getElementById('game-player').style.display = 'block';
-            document.getElementById('player-title').innerText = title;
-            document.getElementById('player-icon').innerText = icon;
-            document.getElementById('mini-game-area').style.display = 'none';
-            currentGameId = id;
-        }
-
-        // Закрытие игры и возврат в меню
-        function closeGame() {
-            document.getElementById('games-container').style.display = 'grid';
-            document.getElementById('game-player').style.display = 'none';
-            score = 0; // Сбрасываем очки
-            document.getElementById('score-text').innerText = 'Очки: 0';
-        }
-
-        // Запуск самой игры
-        function startGame() {
-            if (currentGameId === 'clicker') {
-                document.getElementById('mini-game-area').style.display = 'block';
-            } else {
-                alert("Эта игра еще в разработке! Попробуй Super Clicker Simulator.");
+        // --- ЧАСТЬ 1: ЛОГИКА АККАУНТОВ ---
+        function login() {
+            const user = document.getElementById('username').value;
+            if (user.length < 3) {
+                alert("Имя должно быть длиннее 3 символов!");
+                return;
             }
+            
+            // Скрываем окно входа и показываем UI
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('ui-layer').style.display = 'block';
+            document.getElementById('player-name').innerText = 'Игрок: ' + user;
+
+            // Запускаем 3D движок!
+            init3DEngine();
         }
 
-        // Логика мини-игры (Кликер)
-        function addScore() {
-            score += 1;
-            document.getElementById('score-text').innerText = 'Очки: ' + score;
+
+        // --- ЧАСТЬ 2: 3D ДВИЖОК (Three.js) ---
+        let scene, camera, renderer;
+
+        function init3DEngine() {
+            // 1. Создаем сцену
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Цвет неба
+
+            // 2. Создаем камеру
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            camera.position.y = 2;
+
+            // 3. Создаем рендерер (отрисовщик)
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('game-canvas').appendChild(renderer.domElement);
+
+            // 4. Добавляем землю (платформу)
+            const floorGeo = new THREE.BoxGeometry(20, 1, 20);
+            const floorMat = new THREE.MeshBasicMaterial({ color: 0x228B22 }); // Зеленый цвет
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.position.y = -1;
+            scene.add(floor);
+
+            // 5. Запускаем цикл анимации
+            animate();
         }
+
+        // Функция для создания новых объектов в игре
+        function addBlock() {
+            if (!scene) return;
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            // Случайный цвет блока
+            const material = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
+            const cube = new THREE.Mesh(geometry, material);
+            
+            // Случайная позиция
+            cube.position.x = (Math.random() - 0.5) * 10;
+            cube.position.z = (Math.random() - 0.5) * 10;
+            cube.position.y = 1;
+            
+            scene.add(cube);
+        }
+
+        // Цикл отрисовки кадров
+        function animate() {
+            requestAnimationFrame(animate);
+            // Здесь можно добавить вращение камеры или объектов
+            renderer.render(scene, camera);
+        }
+
+        // Обновление размера окна при изменении
+        window.addEventListener('resize', () => {
+            if(camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
     </script>
 </body>
 </html>
