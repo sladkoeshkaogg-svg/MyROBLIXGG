@@ -1,187 +1,1399 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exiblox - Игровая Платформа</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --nav-bg: #1e1e1e;
-            --accent: #00b0ff;
-            --text-main: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exiblox Games — Играй бесплатно онлайн</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            overflow: hidden; /* Чтобы 3D холст не создавал прокрутку */
-        }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-main: #0f0f1a;
+    --bg-card: #1a1a2e;
+    --bg-header: #12121fdd;
+    --bg-sidebar: #161625;
+    --accent: #7c3aed;
+    --accent-hover: #6d28d9;
+    --accent-light: #a78bfa;
+    --green: #10b981;
+    --orange: #f59e0b;
+    --pink: #ec4899;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-bright: #ffffff;
+    --border: #2a2a40;
+    --card-hover: #222240;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
 
-        /* Окно авторизации (Модальное окно) */
-        #auth-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-main);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-        .auth-box {
-            background: var(--nav-bg);
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+  /* ===== HEADER ===== */
+  .header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: var(--bg-header);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    height: 64px;
+    display: flex; align-items: center;
+    padding: 0 24px;
+    transition: box-shadow .3s;
+  }
+  .header.scrolled { box-shadow: 0 4px 30px rgba(0,0,0,.5); }
+  .header-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    width: 100%; max-width: 1440px; margin: 0 auto;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--pink));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #fff;
+    box-shadow: 0 0 20px rgba(124,58,237,.4);
+    position: relative; overflow: hidden;
+  }
+  .logo-icon::after {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,.15) 50%, transparent 60%);
+    animation: shine 3s infinite;
+  }
+  @keyframes shine { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+  .logo-text { font-size: 22px; font-weight: 800; color: var(--text-bright); letter-spacing: -0.5px; }
+  .logo-text span { color: var(--accent-light); }
 
-        .auth-box input {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            background: #333;
-            color: white;
-            box-sizing: border-box;
-        }
+  /* Search */
+  .search-box {
+    flex: 1; max-width: 480px; margin: 0 32px; position: relative;
+  }
+  .search-box input {
+    width: 100%; padding: 10px 16px 10px 44px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--border);
+    border-radius: 50px; color: var(--text-bright);
+    font-size: 14px; outline: none; transition: all .3s;
+  }
+  .search-box input::placeholder { color: var(--text-dim); }
+  .search-box input:focus {
+    border-color: var(--accent);
+    background: rgba(124,58,237,.08);
+    box-shadow: 0 0 0 3px rgba(124,58,237,.15);
+  }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); pointer-events: none;
+  }
 
-        .btn {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 10px;
-        }
+  /* Header right */
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .btn-login {
+    padding: 8px 20px; background: var(--accent);
+    border: none; border-radius: 50px; color: #fff;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-login:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(124,58,237,.4);}
+  .theme-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: rgba(255,255,255,.06); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: .2s;
+  }
+  .theme-btn:hover { background: rgba(255,255,255,.1); color: var(--text-bright); }
 
-        .btn:hover { background-color: #0081cb; }
+  /* ===== NAVIGATION TABS ===== */
+  .nav-bar {
+    position: fixed; top: 64px; left: 0; right: 0; z-index: 999;
+    background: var(--bg-sidebar);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .nav-bar::-webkit-scrollbar { display:none; }
+  .nav-inner {
+    display: flex; align-items: center; gap: 4px;
+    max-width: 1440px; margin: 0 auto; padding: 0 24px;
+    height: 48px;
+  }
+  .nav-tab {
+    padding: 8px 18px; white-space: nowrap;
+    font-size: 13px; font-weight: 600; color: var(--text-dim);
+    border-radius: 50px; cursor: pointer; transition: all .2s;
+    border: none; background: transparent;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-tab:hover { color: var(--text-bright); background: rgba(255,255,255,.06); }
+  .nav-tab.active {
+    color: var(--text-bright);
+    background: var(--accent);
+  }
+  .nav-tab .tab-emoji { font-size: 15px; }
 
-        /* Интерфейс платформы */
-        #ui-layer {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            display: none; /* Скрыто до авторизации */
-        }
+  /* ===== MAIN LAYOUT ===== */
+  .main-wrapper {
+    margin-top: 112px;
+    padding: 24px;
+    max-width: 1440px;
+    margin-left: auto; margin-right: auto;
+    display: flex; gap: 24px;
+  }
 
-        /* Контейнер для 3D игры */
-        #game-canvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1;
-        }
-    </style>
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    position: sticky; top: 136px;
+    height: fit-content;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .sidebar-title {
+    font-size: 11px; font-weight: 700; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 1.5px;
+    padding: 8px 14px; margin-bottom: 4px;
+  }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: var(--radius-sm);
+    cursor: pointer; transition: all .2s; font-size: 14px;
+    font-weight: 500; color: var(--text-dim); border: none;
+    background: transparent; text-align: left; width: 100%;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,.06); color: var(--text-bright); }
+  .sidebar-item.active { background: rgba(124,58,237,.15); color: var(--accent-light); }
+  .sidebar-item .si-icon { font-size: 18px; width: 24px; text-align: center; }
+  .sidebar-item .si-count {
+    margin-left: auto; font-size: 11px;
+    background: rgba(255,255,255,.08); padding: 2px 8px;
+    border-radius: 50px; color: var(--text-dim);
+  }
+  .sidebar-divider {
+    height: 1px; background: var(--border); margin: 8px 14px;
+  }
+
+  /* ===== CONTENT ===== */
+  .content { flex: 1; min-width: 0; }
+
+  /* Banner / Hero */
+  .hero-banner {
+    position: relative; border-radius: 16px; overflow: hidden;
+    height: 260px; margin-bottom: 32px;
+    background: linear-gradient(135deg, #1e1145 0%, #3b1578 40%, #7c3aed 100%);
+    display: flex; align-items: center; padding: 40px 48px;
+    cursor: pointer; transition: transform .3s;
+  }
+  .hero-banner:hover { transform: scale(1.005); }
+  .hero-content { position: relative; z-index: 2; max-width: 55%; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.15); backdrop-filter: blur(10px);
+    padding: 6px 14px; border-radius: 50px; font-size: 12px;
+    font-weight: 600; color: #fff; margin-bottom: 16px;
+  }
+  .hero-badge .pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+  .hero-title { font-size: 32px; font-weight: 800; color: #fff; margin-bottom: 10px; line-height: 1.2; }
+  .hero-desc { font-size: 15px; color: rgba(255,255,255,.75); margin-bottom: 20px; line-height: 1.5; }
+  .hero-btn {
+    padding: 12px 28px; background: #fff; color: var(--accent);
+    border: none; border-radius: 50px; font-size: 15px;
+    font-weight: 700; cursor: pointer; transition: .2s;
+  }
+  .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.3); }
+  .hero-shapes {
+    position: absolute; right: 0; top: 0; bottom: 0; width: 50%;
+    overflow: hidden; opacity: .3;
+  }
+  .hero-shapes div {
+    position: absolute; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.3);
+  }
+  .hero-shapes .s1 { width: 200px; height: 200px; top: -40px; right: 60px; animation: float 6s ease-in-out infinite; }
+  .hero-shapes .s2 { width: 120px; height: 120px; bottom: 20px; right: 200px; animation: float 4s ease-in-out infinite reverse; }
+  .hero-shapes .s3 { width: 80px; height: 80px; top: 60px; right: 280px; animation: float 5s ease-in-out infinite; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+
+  /* Section */
+  .section { margin-bottom: 36px; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 20px; font-weight: 700; color: var(--text-bright);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .st-emoji { font-size: 22px; }
+  .see-all {
+    font-size: 13px; font-weight: 600; color: var(--accent-light);
+    cursor: pointer; border: none; background: none;
+    display: flex; align-items: center; gap: 4px; transition: .2s;
+  }
+  .see-all:hover { color: var(--text-bright); }
+
+  /* Games Grid */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+  }
+  .games-grid.large {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  /* Game Card */
+  .game-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    overflow: hidden; cursor: pointer;
+    transition: all .25s; position: relative;
+    border: 1px solid transparent;
+  }
+  .game-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 30px rgba(124,58,237,.2);
+  }
+  .game-thumb {
+    width: 100%; aspect-ratio: 4/3;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 48px; position: relative; overflow: hidden;
+  }
+  .game-thumb .play-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: .3s;
+  }
+  .game-card:hover .play-overlay { opacity: 1; }
+  .play-circle {
+    width: 50px; height: 50px; border-radius: 50%;
+    background: var(--accent); display: flex;
+    align-items: center; justify-content: center;
+    box-shadow: 0 4px 15px rgba(124,58,237,.5);
+    transform: scale(.8); transition: .3s;
+  }
+  .game-card:hover .play-circle { transform: scale(1); }
+  .play-circle svg { fill: #fff; margin-left: 3px; }
+  .game-info { padding: 12px; }
+  .game-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .game-meta {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .game-rating {
+    display: flex; align-items: center; gap: 3px;
+    color: var(--orange);
+  }
+  .game-tag {
+    position: absolute; top: 8px; left: 8px;
+    padding: 3px 10px; border-radius: 50px;
+    font-size: 10px; font-weight: 700;
+    color: #fff; z-index: 2;
+  }
+  .tag-hot { background: var(--red); }
+  .tag-new { background: var(--green); }
+  .tag-top { background: var(--orange); }
+  .tag-exclusive { background: var(--pink); }
+
+  /* Categories strip */
+  .categories-strip {
+    display: flex; gap: 12px; overflow-x: auto;
+    padding-bottom: 8px; margin-bottom: 24px;
+    scrollbar-width: none;
+  }
+  .categories-strip::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    flex-shrink: 0; padding: 10px 20px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 50px; font-size: 13px; font-weight: 600;
+    color: var(--text-dim); cursor: pointer; transition: .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cat-chip:hover, .cat-chip.active {
+    border-color: var(--accent);
+    background: rgba(124,58,237,.1);
+    color: var(--accent-light);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    text-align: center; transition: .2s;
+  }
+  .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .stat-num {
+    font-size: 28px; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-light), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 4px;
+  }
+  .stat-label { font-size: 12px; color: var(--text-dim); font-weight: 500; }
+
+  /* Featured game wide */
+  .featured-wide {
+    background: linear-gradient(135deg, #1a1a3e, #2d1b69);
+    border-radius: 16px; padding: 32px;
+    display: flex; align-items: center; gap: 32px;
+    margin-bottom: 32px; border: 1px solid var(--border);
+    cursor: pointer; transition: .3s;
+  }
+  .featured-wide:hover { border-color: var(--accent); transform: scale(1.005); }
+  .fw-thumb {
+    width: 200px; height: 150px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 64px; flex-shrink: 0;
+  }
+  .fw-info { flex: 1; }
+  .fw-badge {
+    display: inline-block; padding: 4px 12px;
+    background: var(--accent); border-radius: 50px;
+    font-size: 11px; font-weight: 700; color: #fff;
+    margin-bottom: 12px;
+  }
+  .fw-title { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .fw-desc { font-size: 14px; color: rgba(255,255,255,.65); margin-bottom: 16px; line-height: 1.5; }
+  .fw-stats { display: flex; gap: 24px; }
+  .fw-stat { text-align: center; }
+  .fw-stat-val { font-size: 18px; font-weight: 700; color: var(--accent-light); }
+  .fw-stat-lbl { font-size: 11px; color: var(--text-dim); }
+  .fw-play {
+    padding: 12px 32px; background: var(--accent);
+    border: none; border-radius: 50px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    margin-left: auto; transition: .2s; flex-shrink: 0;
+  }
+  .fw-play:hover { background: var(--accent-hover); transform: scale(1.05); }
+
+  /* Leaderboard */
+  .leaderboard {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin-bottom: 32px;
+  }
+  .lb-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .lb-title { font-size: 16px; font-weight: 700; color: var(--text-bright); }
+  .lb-row {
+    display: flex; align-items: center; padding: 12px 20px; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,.03);
+    transition: .2s;
+  }
+  .lb-row:hover { background: rgba(255,255,255,.03); }
+  .lb-rank {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .lb-rank.gold { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+  .lb-rank.silver { background: linear-gradient(135deg, #94a3b8, #64748b); color: #fff; }
+  .lb-rank.bronze { background: linear-gradient(135deg, #d97706, #92400e); color: #fff; }
+  .lb-rank.normal { background: rgba(255,255,255,.06); color: var(--text-dim); }
+  .lb-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .lb-name { flex: 1; font-size: 14px; font-weight: 500; color: var(--text-bright); }
+  .lb-score { font-size: 14px; font-weight: 700; color: var(--accent-light); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.75);
+    z-index: 2000; display: none; align-items: center;
+    justify-content: center; backdrop-filter: blur(8px);
+    animation: fadeIn .2s;
+  }
+  .modal-overlay.show { display: flex; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; width: 90%; max-width: 700px;
+    max-height: 85vh; overflow-y: auto; position: relative;
+    animation: slideUp .3s;
+  }
+  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.1); border: none;
+    color: var(--text); cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: .2s; z-index: 10;
+  }
+  .modal-close:hover { background: rgba(255,255,255,.2); }
+  .modal-game-area {
+    width: 100%; aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #1a1a3e, #0f0f2a);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    border-radius: 20px 20px 0 0;
+  }
+  .modal-game-icon { font-size: 72px; }
+  .modal-game-text { color: var(--text-dim); font-size: 14px; }
+  .modal-body { padding: 24px; }
+  .modal-title { font-size: 22px; font-weight: 800; color: var(--text-bright); margin-bottom: 8px; }
+  .modal-desc { font-size: 14px; color: var(--text-dim); line-height: 1.6; margin-bottom: 20px; }
+  .modal-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .modal-tag {
+    padding: 4px 12px; background: rgba(124,58,237,.15);
+    border-radius: 50px; font-size: 12px; color: var(--accent-light);
+    font-weight: 500;
+  }
+  .modal-actions { display: flex; gap: 12px; }
+  .modal-play-btn {
+    flex: 1; padding: 14px; background: var(--accent);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: .2s; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .modal-play-btn:hover { background: var(--accent-hover); }
+  .modal-fav-btn {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(255,255,255,.06); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer; font-size: 20px;
+    transition: .2s; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-fav-btn:hover { color: var(--pink); border-color: var(--pink); }
+  .modal-fav-btn.faved { color: var(--pink); background: rgba(236,72,153,.1); border-color: var(--pink); }
+
+  /* Login Modal */
+  .login-modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; width: 90%; max-width: 420px;
+    padding: 40px; text-align: center; position: relative;
+    animation: slideUp .3s;
+  }
+  .login-title { font-size: 24px; font-weight: 800; color: var(--text-bright); margin-bottom: 8px; }
+  .login-sub { font-size: 14px; color: var(--text-dim); margin-bottom: 24px; }
+  .login-input {
+    width: 100%; padding: 14px 16px; background: rgba(255,255,255,.06);
+    border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text-bright); font-size: 14px; margin-bottom: 12px;
+    outline: none; transition: .3s;
+  }
+  .login-input:focus { border-color: var(--accent); }
+  .login-btn {
+    width: 100%; padding: 14px; background: var(--accent);
+    border: none; border-radius: 12px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: .2s; margin-top: 8px;
+  }
+  .login-btn:hover { background: var(--accent-hover); }
+  .login-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--text-dim); font-size: 12px;
+  }
+  .login-divider::before, .login-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .social-btns { display: flex; gap: 12px; }
+  .social-btn {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: 1px solid var(--border); background: rgba(255,255,255,.04);
+    color: var(--text); cursor: pointer; font-size: 18px;
+    transition: .2s; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .social-btn:hover { background: rgba(255,255,255,.08); border-color: var(--accent); }
+  .social-btn span { font-size: 13px; font-weight: 500; }
+
+  /* Fullscreen game */
+  .fullscreen-game {
+    position: fixed; inset: 0; z-index: 3000;
+    background: #000; display: none;
+    flex-direction: column;
+  }
+  .fullscreen-game.show { display: flex; }
+  .fs-toolbar {
+    height: 48px; background: var(--bg-header);
+    display: flex; align-items: center; padding: 0 16px;
+    gap: 12px; border-bottom: 1px solid var(--border);
+  }
+  .fs-back {
+    padding: 6px 16px; background: rgba(255,255,255,.1);
+    border: none; border-radius: 50px; color: var(--text);
+    cursor: pointer; font-size: 13px; font-weight: 600; transition: .2s;
+  }
+  .fs-back:hover { background: rgba(255,255,255,.2); }
+  .fs-title { font-size: 14px; font-weight: 600; color: var(--text-bright); }
+  .fs-game-container {
+    flex: 1; display: flex; align-items: center;
+    justify-content: center; background: linear-gradient(135deg, #0a0a1a, #1a1035);
+  }
+  .fs-game-placeholder {
+    text-align: center; color: var(--text-dim);
+  }
+  .fs-game-placeholder .big-icon { font-size: 100px; margin-bottom: 20px; }
+  .fs-game-placeholder h2 { font-size: 28px; color: var(--text-bright); margin-bottom: 8px; }
+  .fs-game-placeholder p { font-size: 15px; max-width: 400px; line-height: 1.6; }
+  .fs-score-display {
+    margin-top: 24px; padding: 16px 32px;
+    background: rgba(124,58,237,.1); border: 1px solid var(--accent);
+    border-radius: 12px; display: inline-block;
+  }
+  .fs-score-display .score-val { font-size: 36px; font-weight: 800; color: var(--accent-light); }
+  .fs-score-display .score-lbl { font-size: 12px; color: var(--text-dim); }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; bottom: 24px; right: 24px;
+    z-index: 5000; display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 14px 20px; border-radius: 12px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-bright); font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+    animation: toastIn .3s;
+    min-width: 280px;
+  }
+  @keyframes toastIn { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
+  .toast.hiding { animation: toastOut .3s forwards; }
+  @keyframes toastOut { to{transform:translateX(100px);opacity:0} }
+  .toast-icon { font-size: 18px; }
+
+  /* Page views */
+  .page-view { display: none; }
+  .page-view.active { display: block; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .featured-wide { flex-direction: column; }
+    .fw-thumb { width: 100%; height: 120px; }
+    .fw-play { margin-left: 0; width: 100%; text-align: center; justify-content: center; }
+    .hero-content { max-width: 100%; }
+    .hero-banner { height: 220px; padding: 24px; }
+    .hero-title { font-size: 24px; }
+    .hero-shapes { display: none; }
+  }
+  @media (max-width: 600px) {
+    .search-box { max-width: 200px; margin: 0 12px; }
+    .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .main-wrapper { padding: 16px; }
+    .stats-bar { gap: 8px; }
+    .stat-num { font-size: 22px; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* Notification badge */
+  .notif-badge {
+    position: relative;
+  }
+  .notif-badge::after {
+    content: '3'; position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--red); font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+
+  /* Loading shimmer */
+  .shimmer {
+    background: linear-gradient(90deg, var(--bg-card) 25%, #252545 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px; margin-top: 48px;
+    max-width: 1440px; margin-left: auto; margin-right: auto;
+  }
+  .footer-inner {
+    display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 24px;
+  }
+  .footer-col h4 {
+    font-size: 13px; font-weight: 700; color: var(--text-bright);
+    margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .footer-col a {
+    display: block; font-size: 13px; color: var(--text-dim);
+    text-decoration: none; margin-bottom: 8px; transition: .2s;
+  }
+  .footer-col a:hover { color: var(--accent-light); }
+  .footer-bottom {
+    text-align: center; margin-top: 24px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text-dim);
+  }
+</style>
 </head>
 <body>
 
-    <div id="auth-modal">
-        <div class="auth-box">
-            <h2>Вход в аккаунт</h2>
-            <p style="font-size: 12px; color: #aaa;">Данные будут сохраняться в облаке</p>
-            <input type="text" id="username" placeholder="Имя пользователя">
-            <input type="password" id="password" placeholder="Пароль">
-            <button class="btn" onclick="login()">Войти / Играть</button>
+<!-- HEADER -->
+<header class="header" id="header">
+  <div class="header-inner">
+    <a class="logo" onclick="navigateTo('home')">
+      <div class="logo-icon">E</div>
+      <div class="logo-text">Exiblox <span>Games</span></div>
+    </a>
+    <div class="search-box">
+      <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="filterGames(this.value)">
+    </div>
+    <div class="header-right">
+      <button class="theme-btn notif-badge" onclick="showToast('🔔','У вас 3 новых уведомления!')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <button class="theme-btn" onclick="toggleTheme()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <button class="btn-login" id="loginBtn" onclick="openLogin()">Войти</button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TABS -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="switchTab(this,'home')"><span class="tab-emoji">🏠</span> Главная</button>
+    <button class="nav-tab" onclick="switchTab(this,'popular')"><span class="tab-emoji">🔥</span> Популярное</button>
+    <button class="nav-tab" onclick="switchTab(this,'new')"><span class="tab-emoji">✨</span> Новинки</button>
+    <button class="nav-tab" onclick="switchTab(this,'categories')"><span class="tab-emoji">📂</span> Категории</button>
+    <button class="nav-tab" onclick="switchTab(this,'multiplayer')"><span class="tab-emoji">👥</span> Мультиплеер</button>
+    <button class="nav-tab" onclick="switchTab(this,'favorites')"><span class="tab-emoji">❤️</span> Избранное</button>
+    <button class="nav-tab" onclick="switchTab(this,'leaderboard')"><span class="tab-emoji">🏆</span> Рейтинг</button>
+    <button class="nav-tab" onclick="switchTab(this,'recent')"><span class="tab-emoji">🕐</span> Недавние</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Жанры</div>
+    <button class="sidebar-item active" onclick="filterCategory(this,'all')">
+      <span class="si-icon">🎮</span> Все игры <span class="si-count">156</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'action')">
+      <span class="si-icon">⚔️</span> Экшен <span class="si-count">24</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'puzzle')">
+      <span class="si-icon">🧩</span> Головоломки <span class="si-count">31</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'racing')">
+      <span class="si-icon">🏎️</span> Гонки <span class="si-count">18</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'strategy')">
+      <span class="si-icon">🏰</span> Стратегии <span class="si-count">22</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'sports')">
+      <span class="si-icon">⚽</span> Спорт <span class="si-count">15</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'arcade')">
+      <span class="si-icon">👾</span> Аркады <span class="si-count">27</span>
+    </button>
+    <button class="sidebar-item" onclick="filterCategory(this,'adventure')">
+      <span class="si-icon">🗺️</span> Приключения <span class="si-count">19</span>
+    </button>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-title">Быстрый доступ</div>
+    <button class="sidebar-item" onclick="switchTab(document.querySelector('.nav-tab'),'favorites')">
+      <span class="si-icon">❤️</span> Избранное
+    </button>
+    <button class="sidebar-item" onclick="switchTab(document.querySelector('.nav-tab'),'recent')">
+      <span class="si-icon">🕐</span> История
+    </button>
+    <button class="sidebar-item" onclick="showToast('⚙️','Настройки скоро будут доступны!')">
+      <span class="si-icon">⚙️</span> Настройки
+    </button>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- HOME PAGE -->
+    <div class="page-view active" id="page-home">
+      <!-- Hero -->
+      <div class="hero-banner" onclick="openGameModal(games[0])">
+        <div class="hero-content">
+          <div class="hero-badge"><div class="pulse"></div> Игра дня</div>
+          <h1 class="hero-title">🎮 Добро пожаловать в Exiblox Games!</h1>
+          <p class="hero-desc">Тысячи бесплатных онлайн-игр. Играй прямо в браузере без загрузок и регистрации.</p>
+          <button class="hero-btn" onclick="event.stopPropagation(); openGameModal(games[0])">▶ Играть сейчас</button>
         </div>
+        <div class="hero-shapes">
+          <div class="s1"></div><div class="s2"></div><div class="s3"></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-bar">
+        <div class="stat-card"><div class="stat-num" id="stat1">0</div><div class="stat-label">Игр доступно</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat2">0</div><div class="stat-label">Игроков онлайн</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat3">0</div><div class="stat-label">Партий сегодня</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat4">0</div><div class="stat-label">Новых игр</div></div>
+      </div>
+
+      <!-- Categories chips -->
+      <div class="categories-strip" id="catStrip"></div>
+
+      <!-- Рекомендуемое -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="st-emoji">🔥</span> Популярное сейчас</h2>
+          <button class="see-all" onclick="switchTab(document.querySelectorAll('.nav-tab')[1],'popular')">Все →</button>
+        </div>
+        <div class="games-grid large" id="popularGrid"></div>
+      </div>
+
+      <!-- Featured wide -->
+      <div class="featured-wide" id="featuredWide" onclick="openGameModal(games[5])"></div>
+
+      <!-- New games -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="st-emoji">✨</span> Новинки</h2>
+          <button class="see-all" onclick="switchTab(document.querySelectorAll('.nav-tab')[2],'new')">Все →</button>
+        </div>
+        <div class="games-grid" id="newGrid"></div>
+      </div>
+
+      <!-- Arcade -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="st-emoji">👾</span> Аркады</h2>
+          <button class="see-all">Все →</button>
+        </div>
+        <div class="games-grid" id="arcadeGrid"></div>
+      </div>
+
+      <!-- Puzzle -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title"><span class="st-emoji">🧩</span> Головоломки</h2>
+          <button class="see-all">Все →</button>
+        </div>
+        <div class="games-grid" id="puzzleGrid"></div>
+      </div>
     </div>
 
-    <div id="ui-layer">
-        <h1 style="margin:0; text-shadow: 2px 2px 4px #000;">Exiblox Studio</h1>
-        <p id="player-name" style="text-shadow: 1px 1px 2px #000;">Игрок: Гость</p>
-        <button class="btn" onclick="addBlock()" style="width: auto;">+ Создать блок</button>
+    <!-- POPULAR PAGE -->
+    <div class="page-view" id="page-popular">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">🔥</span> Все популярные игры</h2></div>
+        <div class="games-grid large" id="allPopularGrid"></div>
+      </div>
     </div>
 
-    <div id="game-canvas"></div>
+    <!-- NEW PAGE -->
+    <div class="page-view" id="page-new">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">✨</span> Все новинки</h2></div>
+        <div class="games-grid large" id="allNewGrid"></div>
+      </div>
+    </div>
 
-    <script>
-        // --- ЧАСТЬ 1: ЛОГИКА АККАУНТОВ ---
-        function login() {
-            const user = document.getElementById('username').value;
-            if (user.length < 3) {
-                alert("Имя должно быть длиннее 3 символов!");
-                return;
-            }
-            
-            // Скрываем окно входа и показываем UI
-            document.getElementById('auth-modal').style.display = 'none';
-            document.getElementById('ui-layer').style.display = 'block';
-            document.getElementById('player-name').innerText = 'Игрок: ' + user;
+    <!-- CATEGORIES PAGE -->
+    <div class="page-view" id="page-categories">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">📂</span> Категории</h2></div>
+        <div class="categories-strip" id="catPageStrip" style="flex-wrap:wrap;"></div>
+        <div class="games-grid large" id="catGamesGrid" style="margin-top:16px;"></div>
+      </div>
+    </div>
 
-            // Запускаем 3D движок!
-            init3DEngine();
-        }
+    <!-- MULTIPLAYER PAGE -->
+    <div class="page-view" id="page-multiplayer">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">👥</span> Мультиплеерные игры</h2></div>
+        <div class="games-grid large" id="multiGrid"></div>
+      </div>
+    </div>
 
+    <!-- FAVORITES PAGE -->
+    <div class="page-view" id="page-favorites">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">❤️</span> Избранное</h2></div>
+        <div id="favEmpty" style="text-align:center;padding:60px 0;color:var(--text-dim);">
+          <div style="font-size:64px;margin-bottom:16px;">💔</div>
+          <h3 style="color:var(--text-bright);margin-bottom:8px;">Пока пусто</h3>
+          <p>Добавляйте игры в избранное, нажимая ❤️</p>
+        </div>
+        <div class="games-grid large" id="favGrid"></div>
+      </div>
+    </div>
 
-        // --- ЧАСТЬ 2: 3D ДВИЖОК (Three.js) ---
-        let scene, camera, renderer;
+    <!-- LEADERBOARD PAGE -->
+    <div class="page-view" id="page-leaderboard">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">🏆</span> Таблица лидеров</h2></div>
+        <div class="leaderboard" id="leaderboardTable"></div>
+      </div>
+    </div>
 
-        function init3DEngine() {
-            // 1. Создаем сцену
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB); // Цвет неба
+    <!-- RECENT PAGE -->
+    <div class="page-view" id="page-recent">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title"><span class="st-emoji">🕐</span> Недавно сыгранные</h2></div>
+        <div id="recentEmpty" style="text-align:center;padding:60px 0;color:var(--text-dim);">
+          <div style="font-size:64px;margin-bottom:16px;">🕹️</div>
+          <h3 style="color:var(--text-bright);margin-bottom:8px;">Нет недавних игр</h3>
+          <p>Начните играть, и ваша история появится здесь</p>
+        </div>
+        <div class="games-grid large" id="recentGrid"></div>
+      </div>
+    </div>
 
-            // 2. Создаем камеру
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 5;
-            camera.position.y = 2;
+    <!-- SEARCH RESULTS -->
+    <div class="page-view" id="page-search">
+      <div class="section">
+        <div class="section-header"><h2 class="section-title" id="searchTitle"><span class="st-emoji">🔍</span> Результаты поиска</h2></div>
+        <div class="games-grid large" id="searchGrid"></div>
+        <div id="searchEmpty" style="text-align:center;padding:60px 0;color:var(--text-dim);display:none;">
+          <div style="font-size:64px;margin-bottom:16px;">🔍</div>
+          <h3 style="color:var(--text-bright);margin-bottom:8px;">Ничего не найдено</h3>
+          <p>Попробуйте другой запрос</p>
+        </div>
+      </div>
+    </div>
 
-            // 3. Создаем рендерер (отрисовщик)
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('game-canvas').appendChild(renderer.domElement);
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>Exiblox Games</h4>
+          <a href="#">О платформе</a>
+          <a href="#">Правила</a>
+          <a href="#">Конфиденциальность</a>
+          <a href="#">Контакты</a>
+        </div>
+        <div class="footer-col">
+          <h4>Игры</h4>
+          <a href="#">Популярные</a>
+          <a href="#">Новинки</a>
+          <a href="#">Мультиплеер</a>
+          <a href="#">Категории</a>
+        </div>
+        <div class="footer-col">
+          <h4>Сообщество</h4>
+          <a href="#">Блог</a>
+          <a href="#">Форум</a>
+          <a href="#">Discord</a>
+          <a href="#">Telegram</a>
+        </div>
+        <div class="footer-col">
+          <h4>Для разработчиков</h4>
+          <a href="#">SDK</a>
+          <a href="#">Документация</a>
+          <a href="#">Опубликовать игру</a>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 Exiblox Games. Все права защищены. Играй бесплатно.</div>
+    </footer>
+  </main>
+</div>
 
-            // 4. Добавляем землю (платформу)
-            const floorGeo = new THREE.BoxGeometry(20, 1, 20);
-            const floorMat = new THREE.MeshBasicMaterial({ color: 0x228B22 }); // Зеленый цвет
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.position.y = -1;
-            scene.add(floor);
+<!-- GAME MODAL -->
+<div class="modal-overlay" id="gameModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('gameModal')">✕</button>
+    <div class="modal-game-area" id="modalGameArea">
+      <div class="modal-game-icon" id="modalIcon"></div>
+      <div class="modal-game-text">Нажмите «Играть» для запуска</div>
+    </div>
+    <div class="modal-body">
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <p class="modal-desc" id="modalDesc"></p>
+      <div class="modal-tags" id="modalTags"></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div class="game-rating" style="font-size:14px;" id="modalRating"></div>
+        <span style="color:var(--text-dim);font-size:13px;" id="modalPlayers"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-play-btn" id="modalPlayBtn">▶ Играть</button>
+        <button class="modal-fav-btn" id="modalFavBtn" onclick="toggleFav()">♥</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            // 5. Запускаем цикл анимации
-            animate();
-        }
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="login-modal">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <div style="font-size:48px;margin-bottom:16px;">🎮</div>
+    <h2 class="login-title">Войти в Exiblox</h2>
+    <p class="login-sub">Сохраняйте прогресс и соревнуйтесь с друзьями</p>
+    <input class="login-input" type="text" placeholder="Имя пользователя или Email" id="loginUsername">
+    <input class="login-input" type="password" placeholder="Пароль" id="loginPassword">
+    <button class="login-btn" onclick="doLogin()">Войти</button>
+    <div class="login-divider">или</div>
+    <div class="social-btns">
+      <button class="social-btn" onclick="doLogin()">🌐 <span>Google</span></button>
+      <button class="social-btn" onclick="doLogin()">💬 <span>VK</span></button>
+      <button class="social-btn" onclick="doLogin()">✈️ <span>Telegram</span></button>
+    </div>
+  </div>
+</div>
 
-        // Функция для создания новых объектов в игре
-        function addBlock() {
-            if (!scene) return;
-            const geometry = new THREE.BoxGeometry(1, 1, 1);
-            // Случайный цвет блока
-            const material = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
-            const cube = new THREE.Mesh(geometry, material);
-            
-            // Случайная позиция
-            cube.position.x = (Math.random() - 0.5) * 10;
-            cube.position.z = (Math.random() - 0.5) * 10;
-            cube.position.y = 1;
-            
-            scene.add(cube);
-        }
+<!-- FULLSCREEN GAME -->
+<div class="fullscreen-game" id="fullscreenGame">
+  <div class="fs-toolbar">
+    <button class="fs-back" onclick="closeFullscreen()">← Назад</button>
+    <div class="fs-title" id="fsTitle"></div>
+  </div>
+  <div class="fs-game-container">
+    <div class="fs-game-placeholder" id="fsPlaceholder">
+      <div class="big-icon" id="fsBigIcon"></div>
+      <h2 id="fsGameName"></h2>
+      <p>Игра загружена и готова! Наслаждайтесь процессом. 🎮</p>
+      <div class="fs-score-display">
+        <div class="score-lbl">ВАШ СЧЁТ</div>
+        <div class="score-val" id="fsScore">0</div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;">
+        <button class="hero-btn" onclick="addScore()" style="background:var(--accent);color:#fff;">+10 очков</button>
+        <button class="hero-btn" onclick="addScore(100)" style="background:var(--green);color:#fff;">+100 очков</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // Цикл отрисовки кадров
-        function animate() {
-            requestAnimationFrame(animate);
-            // Здесь можно добавить вращение камеры или объектов
-            renderer.render(scene, camera);
-        }
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
 
-        // Обновление размера окна при изменении
-        window.addEventListener('resize', () => {
-            if(camera && renderer) {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            }
-        });
-    </script>
+<script>
+// ===== GAME DATA =====
+const games = [
+  { id:1, name:"Космический Рейнджер", icon:"🚀", cat:"action", tags:["action","space","shooter"], rating:4.8, players:"12.5K", desc:"Защитите галактику от пришельцев! Эпический космический шутер с потрясающей графикой.", color:"linear-gradient(135deg,#1a1040,#3b1578)", tag:"hot", multi:true },
+  { id:2, name:"Кубический Мир", icon:"🧊", cat:"adventure", tags:["adventure","sandbox","building"], rating:4.9, players:"28.3K", desc:"Стройте, исследуйте и выживайте в бесконечном кубическом мире.", color:"linear-gradient(135deg,#0d3320,#10b981)", tag:"top", multi:true },
+  { id:3, name:"Гонка Мечты", icon:"🏎️", cat:"racing", tags:["racing","cars","speed"], rating:4.5, players:"8.7K", desc:"Скоростные гонки на суперкарах по всему миру.", color:"linear-gradient(135deg,#3b0a0a,#ef4444)", tag:"new", multi:true },
+  { id:4, name:"Судоку Мастер", icon:"🔢", cat:"puzzle", tags:["puzzle","numbers","logic"], rating:4.7, players:"5.2K", desc:"Классическая головоломка с числами. Развивайте логику!", color:"linear-gradient(135deg,#1a1a3e,#3b82f6)", tag:null, multi:false },
+  { id:5, name:"Зомби Апокалипсис", icon:"🧟", cat:"action", tags:["action","zombie","survival"], rating:4.6, players:"15.1K", desc:"Выживайте в мире, захваченном зомби. Собирайте ресурсы и стройте укрытия.", color:"linear-gradient(135deg,#1a2e0a,#4d7c0f)", tag:"hot", multi:true },
+  { id:6, name:"Магическая Ферма", icon:"🌾", cat:"strategy", tags:["strategy","farm","management"], rating:4.8, players:"18.9K", desc:"Управляйте магической фермой. Выращивайте волшебные растения и торгуйте.", color:"linear-gradient(135deg,#3d2608,#f59e0b)", tag:"top", multi:false },
+  { id:7, name:"Пинг-Понг Про", icon:"🏓", cat:"sports", tags:["sports","pingpong","multiplayer"], rating:4.3, players:"3.8K", desc:"Соревнуйтесь в пинг-понг онлайн с игроками со всего мира.", color:"linear-gradient(135deg,#1a1a3e,#7c3aed)", tag:null, multi:true },
+  { id:8, name:"Три в Ряд: Драконы", icon:"🐉", cat:"puzzle", tags:["puzzle","match3","dragons"], rating:4.4, players:"9.1K", desc:"Собирайте комбинации из драконов и открывайте магические способности.", color:"linear-gradient(135deg,#2d0a3b,#ec4899)", tag:"new", multi:false },
+  { id:9, name:"Танковые Битвы", icon:"🔫", cat:"action", tags:["action","tanks","battle"], rating:4.5, players:"11.2K", desc:"Управляйте мощным танком в многопользовательских сражениях.", color:"linear-gradient(135deg,#1a2e1a,#059669)", tag:null, multi:true },
+  { id:10, name:"Шахматы Онлайн", icon:"♟️", cat:"strategy", tags:["strategy","chess","classic"], rating:4.9, players:"22.4K", desc:"Играйте в шахматы с реальными противниками. Рейтинговая система ELO.", color:"linear-gradient(135deg,#1a1a1a,#525252)", tag:"top", multi:true },
+  { id:11, name:"Fruit Ninja X", icon:"🍉", cat:"arcade", tags:["arcade","fruit","casual"], rating:4.2, players:"7.3K", desc:"Рубите фрукты с невероятной скоростью! Не трогайте бомбы.", color:"linear-gradient(135deg,#3b0d0d,#dc2626)", tag:null, multi:false },
+  { id:12, name:"Башня Героев", icon:"🏰", cat:"strategy", tags:["strategy","tower","defense"], rating:4.6, players:"13.7K", desc:"Стройте башни и защищайте королевство от волн монстров.", color:"linear-gradient(135deg,#2a1508,#b45309)", tag:"hot", multi:false },
+  { id:13, name:"Водные Гонки", icon:"🚤", cat:"racing", tags:["racing","water","boats"], rating:4.1, players:"4.5K", desc:"Скоростные гонки на водных мотоциклах. Волны и адреналин!", color:"linear-gradient(135deg,#062c3f,#0ea5e9)", tag:"new", multi:true },
+  { id:14, name:"Слово Дня", icon:"📝", cat:"puzzle", tags:["puzzle","words","trivia"], rating:4.7, players:"16.8K", desc:"Угадайте слово за 6 попыток. Новое слово каждый день!", color:"linear-gradient(135deg,#1e1145,#6d28d9)", tag:"exclusive", multi:false },
+  { id:15, name:"Баскетбол 3D", icon:"🏀", cat:"sports", tags:["sports","basketball","3d"], rating:4.4, players:"6.9K", desc:"Реалистичный баскетбол с видом от третьего лица.", color:"linear-gradient(135deg,#3d1506,#ea580c)", tag:null, multi:true },
+  { id:16, name:"Змейка Неон", icon:"🐍", cat:"arcade", tags:["arcade","snake","neon"], rating:4.3, players:"8.4K", desc:"Классическая змейка в неоновом стиле. Соревнуйтесь за рекорд!", color:"linear-gradient(135deg,#0a1a0a,#22c55e)", tag:null, multi:false },
+  { id:17, name:"Пират Клад", icon:"🏴‍☠️", cat:"adventure", tags:["adventure","pirate","treasure"], rating:4.5, players:"7.6K", desc:"Отправьтесь в морское путешествие и найдите пиратский клад!", color:"linear-gradient(135deg,#1a1008,#a16207)", tag:"new", multi:false },
+  { id:18, name:"Футбол Лига", icon:"⚽", cat:"sports", tags:["sports","football","league"], rating:4.6, players:"19.3K", desc:"Управляйте футбольной командой и выиграйте чемпионат!", color:"linear-gradient(135deg,#0a2612,#16a34a)", tag:"top", multi:true },
+  { id:19, name:"Bubble Pop", icon:"🫧", cat:"arcade", tags:["arcade","bubble","casual"], rating:4.1, players:"5.7K", desc:"Лопайте пузыри и набирайте очки! Простая и затягивающая игра.", color:"linear-gradient(135deg,#0c1a3d,#3b82f6)", tag:null, multi:false },
+  { id:20, name:"Ниндзя Прыжок", icon:"🥷", cat:"arcade", tags:["arcade","ninja","platformer"], rating:4.5, players:"10.2K", desc:"Прыгайте по платформам как настоящий ниндзя!", color:"linear-gradient(135deg,#1a0a2e,#8b5cf6)", tag:"hot", multi:false },
+  { id:21, name:"Покер Стол", icon:"🃏", cat:"strategy", tags:["strategy","poker","cards"], rating:4.7, players:"14.1K", desc:"Техасский холдем с реальными игроками. Блефуйте и побеждайте!", color:"linear-gradient(135deg,#0a1e0a,#15803d)", tag:null, multi:true },
+  { id:22, name:"Лабиринт Минотавра", icon:"🏛️", cat:"puzzle", tags:["puzzle","maze","mythology"], rating:4.3, players:"3.9K", desc:"Найдите выход из запутанного лабиринта Минотавра.", color:"linear-gradient(135deg,#2e1a08,#c2410c)", tag:null, multi:false },
+  { id:23, name:"Киберпанк Бегун", icon:"🦿", cat:"action", tags:["action","cyberpunk","runner"], rating:4.6, players:"11.8K", desc:"Бегите по неоновым улицам киберпанк-города!", color:"linear-gradient(135deg,#0a0a2e,#6366f1)", tag:"new", multi:false },
+  { id:24, name:"Ферма Животных", icon:"🐄", cat:"strategy", tags:["strategy","farm","animals"], rating:4.4, players:"8.2K", desc:"Заботьтесь о животных на своей ферме и расширяйте хозяйство.", color:"linear-gradient(135deg,#1a2e08,#65a30d)", tag:null, multi:false },
+];
+
+// State
+let favorites = JSON.parse(localStorage.getItem('exiblox_favs') || '[]');
+let recentGames = JSON.parse(localStorage.getItem('exiblox_recent') || '[]');
+let currentGame = null;
+let isLoggedIn = localStorage.getItem('exiblox_logged') === 'true';
+let currentScore = 0;
+let currentCatFilter = 'all';
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderAll();
+  animateStats();
+  if(isLoggedIn) updateLoginState();
+});
+
+function renderAll() {
+  renderCatStrips();
+  renderPopular();
+  renderNew();
+  renderArcade();
+  renderPuzzle();
+  renderFeaturedWide();
+  renderAllPopular();
+  renderAllNew();
+  renderMultiplayer();
+  renderFavorites();
+  renderRecent();
+  renderLeaderboard();
+  renderCatPage();
+}
+
+// ===== RENDER FUNCTIONS =====
+function createGameCard(game) {
+  const isFav = favorites.includes(game.id);
+  const tagHTML = game.tag ? `<div class="game-tag tag-${game.tag}">${
+    game.tag==='hot'?'🔥 Хит':game.tag==='new'?'✨ Новое':game.tag==='top'?'👑 Топ':'💎 Эксклюзив'
+  }</div>` : '';
+  return `
+    <div class="game-card" onclick="openGameModal(games[${games.indexOf(game)}])">
+      ${tagHTML}
+      <div class="game-thumb" style="background:${game.color}">
+        <span style="font-size:56px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))">${game.icon}</span>
+        <div class="play-overlay">
+          <div class="play-circle"><svg width="20" height="20" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+        </div>
+      </div>
+      <div class="game-info">
+        <div class="game-name">${game.name}</div>
+        <div class="game-meta">
+          <span class="game-rating">★ ${game.rating}</span>
+          <span>👤 ${game.players}</span>
+          ${isFav ? '<span style="color:var(--pink)">❤️</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderGrid(containerId, gamesList) {
+  const c = document.getElementById(containerId);
+  if(c) c.innerHTML = gamesList.map(g => createGameCard(g)).join('');
+}
+
+function renderPopular() {
+  renderGrid('popularGrid', games.filter(g=>g.tag==='hot'||g.tag==='top').slice(0,8));
+}
+function renderNew() {
+  renderGrid('newGrid', games.filter(g=>g.tag==='new').slice(0,8));
+}
+function renderArcade() {
+  renderGrid('arcadeGrid', games.filter(g=>g.cat==='arcade').slice(0,4));
+}
+function renderPuzzle() {
+  renderGrid('puzzleGrid', games.filter(g=>g.cat==='puzzle').slice(0,4));
+}
+function renderAllPopular() {
+  renderGrid('allPopularGrid', [...games].sort((a,b)=>b.rating-a.rating));
+}
+function renderAllNew() {
+  renderGrid('allNewGrid', games.filter(g=>g.tag==='new' || g.id > 15));
+}
+function renderMultiplayer() {
+  renderGrid('multiGrid', games.filter(g=>g.multi));
+}
+
+function renderFeaturedWide() {
+  const g = games[5];
+  document.getElementById('featuredWide').innerHTML = `
+    <div class="fw-thumb" style="background:${g.color};border-radius:12px;">${g.icon}</div>
+    <div class="fw-info">
+      <span class="fw-badge">⭐ Рекомендуем</span>
+      <h3 class="fw-title">${g.name}</h3>
+      <p class="fw-desc">${g.desc}</p>
+      <div class="fw-stats">
+        <div class="fw-stat"><div class="fw-stat-val">★ ${g.rating}</div><div class="fw-stat-lbl">Рейтинг</div></div>
+        <div class="fw-stat"><div class="fw-stat-val">${g.players}</div><div class="fw-stat-lbl">Играют</div></div>
+      </div>
+    </div>
+    <button class="fw-play" onclick="event.stopPropagation();openGameModal(games[5])">▶ Играть</button>`;
+}
+
+function renderCatStrips() {
+  const cats = [
+    {e:'🎮',n:'Все',v:'all'},{e:'⚔️',n:'Экшен',v:'action'},{e:'🧩',n:'Головоломки',v:'puzzle'},
+    {e:'🏎️',n:'Гонки',v:'racing'},{e:'🏰',n:'Стратегии',v:'strategy'},{e:'⚽',n:'Спорт',v:'sports'},
+    {e:'👾',n:'Аркады',v:'arcade'},{e:'🗺️',n:'Приключения',v:'adventure'}
+  ];
+  const html = cats.map(c=>`<button class="cat-chip${c.v===currentCatFilter?' active':''}" onclick="setCatFilter('${c.v}',this)">${c.e} ${c.n}</button>`).join('');
+  document.getElementById('catStrip').innerHTML = html;
+  const ps = document.getElementById('catPageStrip');
+  if(ps) ps.innerHTML = html;
+}
+
+function renderFavorites() {
+  const favGames = games.filter(g=>favorites.includes(g.id));
+  renderGrid('favGrid', favGames);
+  document.getElementById('favEmpty').style.display = favGames.length ? 'none' : 'block';
+}
+
+function renderRecent() {
+  const recGames = recentGames.map(id=>games.find(g=>g.id===id)).filter(Boolean);
+  renderGrid('recentGrid', recGames);
+  document.getElementById('recentEmpty').style.display = recGames.length ? 'none' : 'block';
+}
+
+function renderLeaderboard() {
+  const leaders = [
+    {name:'ПроГеймер_228',avatar:'😎',score:'1,247,890'},
+    {name:'NightWolf',avatar:'🐺',score:'1,102,340'},
+    {name:'CyberQueen',avatar:'👑',score:'987,210'},
+    {name:'PixelMaster',avatar:'🎮',score:'876,540'},
+    {name:'DragonSlayer',avatar:'🐉',score:'765,120'},
+    {name:'StarRunner',avatar:'⭐',score:'654,830'},
+    {name:'IcePhoenix',avatar:'❄️',score:'543,210'},
+    {name:'ThunderBolt',avatar:'⚡',score:'432,100'},
+    {name:'ShadowNinja',avatar:'🥷',score:'321,780'},
+    {name:'RocketFox',avatar:'🦊',score:'210,450'},
+  ];
+  const ranks = ['gold','silver','bronze'];
+  document.getElementById('leaderboardTable').innerHTML = `
+    <div class="lb-header"><span class="lb-title">🏆 Топ игроков</span><span style="font-size:12px;color:var(--text-dim);">Обновлено сегодня</span></div>
+    ${leaders.map((l,i)=>`
+      <div class="lb-row">
+        <div class="lb-rank ${ranks[i]||'normal'}">${i+1}</div>
+        <div class="lb-avatar" style="background:rgba(255,255,255,.06);border-radius:50%;">${l.avatar}</div>
+        <div class="lb-name">${l.name}</div>
+        <div class="lb-score">${l.score}</div>
+      </div>`).join('')}`;
+}
+
+function renderCatPage() {
+  const filtered = currentCatFilter==='all' ? games : games.filter(g=>g.cat===currentCatFilter);
+  renderGrid('catGamesGrid', filtered);
+}
+
+// ===== NAVIGATION =====
+function switchTab(el, page) {
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(el && el.classList) el.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-tab').forEach(t=>{
+      if(t.textContent.toLowerCase().includes(page)) t.classList.add('active');
+    });
+  }
+  navigateTo(page);
+}
+
+function navigateTo(page) {
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
+  const target = document.getElementById('page-'+page);
+  if(target) target.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function filterCategory(el, cat) {
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  currentCatFilter = cat;
+  renderCatStrips();
+  renderCatPage();
+  switchTab(document.querySelectorAll('.nav-tab')[3], 'categories');
+}
+
+function setCatFilter(cat, el) {
+  currentCatFilter = cat;
+  document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderCatPage();
+  renderCatStrips();
+}
+
+// ===== SEARCH =====
+function filterGames(query) {
+  if(!query.trim()) { navigateTo('home'); return; }
+  const q = query.toLowerCase();
+  const results = games.filter(g =>
+    g.name.toLowerCase().includes(q) ||
+    g.tags.some(t=>t.includes(q)) ||
+    g.cat.includes(q) ||
+    g.desc.toLowerCase().includes(q)
+  );
+  document.getElementById('searchTitle').innerHTML = `<span class="st-emoji">🔍</span> Результаты: "${query}"`;
+  renderGrid('searchGrid', results);
+  document.getElementById('searchEmpty').style.display = results.length ? 'none' : 'block';
+  navigateTo('search');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+}
+
+// ===== GAME MODAL =====
+function openGameModal(game) {
+  currentGame = game;
+  document.getElementById('modalIcon').textContent = game.icon;
+  document.getElementById('modalGameArea').style.background = game.color;
+  document.getElementById('modalTitle').textContent = game.name;
+  document.getElementById('modalDesc').textContent = game.desc;
+  document.getElementById('modalRating').innerHTML = '★ ' + game.rating;
+  document.getElementById('modalPlayers').textContent = '👤 ' + game.players + ' играют';
+  document.getElementById('modalTags').innerHTML = game.tags.map(t=>`<span class="modal-tag">${t}</span>`).join('');
+  document.getElementById('modalFavBtn').className = 'modal-fav-btn' + (favorites.includes(game.id) ? ' faved' : '');
+  document.getElementById('modalPlayBtn').onclick = () => launchGame(game);
+  document.getElementById('gameModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// Click overlay to close
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => {
+    if(e.target === m) { m.classList.remove('show'); document.body.style.overflow=''; }
+  });
+});
+
+// ===== FAVORITES =====
+function toggleFav() {
+  if(!currentGame) return;
+  const idx = favorites.indexOf(currentGame.id);
+  if(idx > -1) {
+    favorites.splice(idx,1);
+    showToast('💔','Удалено из избранного');
+  } else {
+    favorites.push(currentGame.id);
+    showToast('❤️','Добавлено в избранное!');
+  }
+  localStorage.setItem('exiblox_favs', JSON.stringify(favorites));
+  document.getElementById('modalFavBtn').className = 'modal-fav-btn' + (favorites.includes(currentGame.id) ? ' faved' : '');
+  renderAll();
+}
+
+// ===== LAUNCH GAME =====
+function launchGame(game) {
+  closeModal('gameModal');
+  // Add to recent
+  recentGames = recentGames.filter(id=>id!==game.id);
+  recentGames.unshift(game.id);
+  if(recentGames.length > 20) recentGames.pop();
+  localStorage.setItem('exiblox_recent', JSON.stringify(recentGames));
+  renderRecent();
+
+  currentScore = 0;
+  document.getElementById('fsTitle').textContent = game.name;
+  document.getElementById('fsBigIcon').textContent = game.icon;
+  document.getElementById('fsGameName').textContent = game.name;
+  document.getElementById('fsScore').textContent = '0';
+  document.getElementById('fullscreenGame').classList.add('show');
+  document.body.style.overflow = 'hidden';
+  showToast('🎮', `${game.name} запущена!`);
+}
+
+function closeFullscreen() {
+  document.getElementById('fullscreenGame').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function addScore(val=10) {
+  currentScore += val;
+  document.getElementById('fsScore').textContent = currentScore.toLocaleString();
+}
+
+// ===== LOGIN =====
+function openLogin() {
+  if(isLoggedIn) {
+    isLoggedIn = false;
+    localStorage.setItem('exiblox_logged','false');
+    document.getElementById('loginBtn').textContent = 'Войти';
+    showToast('👋','Вы вышли из аккаунта');
+    return;
+  }
+  document.getElementById('loginModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function doLogin() {
+  isLoggedIn = true;
+  localStorage.setItem('exiblox_logged','true');
+  updateLoginState();
+  closeModal('loginModal');
+  showToast('🎉','Добро пожаловать в Exiblox!');
+}
+
+function updateLoginState() {
+  document.getElementById('loginBtn').textContent = isLoggedIn ? '👤 Выйти' : 'Войти';
+}
+
+// ===== TOAST =====
+function showToast(icon, text) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span class="toast-icon">${icon}</span>${text}`;
+  c.appendChild(t);
+  setTimeout(()=>{t.classList.add('hiding');setTimeout(()=>t.remove(),300);},3000);
+}
+
+// ===== STATS ANIMATION =====
+function animateStats() {
+  const targets = [{el:'stat1',val:156},{el:'stat2',val:24731},{el:'stat3',val:89452},{el:'stat4',val:12}];
+  targets.forEach(({el,val})=>{
+    let curr=0; const step=Math.ceil(val/60);
+    const interval=setInterval(()=>{
+      curr=Math.min(curr+step,val);
+      document.getElementById(el).textContent=curr.toLocaleString();
+      if(curr>=val) clearInterval(interval);
+    },20);
+  });
+}
+
+// ===== HEADER SCROLL =====
+window.addEventListener('scroll',()=>{
+  document.getElementById('header').classList.toggle('scrolled',window.scrollY>10);
+});
+
+// ===== THEME TOGGLE (fun effect) =====
+let themeLight = false;
+function toggleTheme() {
+  themeLight = !themeLight;
+  if(themeLight) {
+    document.documentElement.style.setProperty('--bg-main','#f0f0f8');
+    document.documentElement.style.setProperty('--bg-card','#ffffff');
+    document.documentElement.style.setProperty('--bg-header','rgba(255,255,255,.9)');
+    document.documentElement.style.setProperty('--bg-sidebar','#f8f8ff');
+    document.documentElement.style.setProperty('--text','#334155');
+    document.documentElement.style.setProperty('--text-dim','#64748b');
+    document.documentElement.style.setProperty('--text-bright','#0f172a');
+    document.documentElement.style.setProperty('--border','#e2e8f0');
+    document.documentElement.style.setProperty('--card-hover','#f1f5f9');
+    showToast('☀️','Светлая тема');
+  } else {
+    document.documentElement.style.setProperty('--bg-main','#0f0f1a');
+    document.documentElement.style.setProperty('--bg-card','#1a1a2e');
+    document.documentElement.style.setProperty('--bg-header','#12121fdd');
+    document.documentElement.style.setProperty('--bg-sidebar','#161625');
+    document.documentElement.style.setProperty('--text','#e2e8f0');
+    document.documentElement.style.setProperty('--text-dim','#94a3b8');
+    document.documentElement.style.setProperty('--text-bright','#ffffff');
+    document.documentElement.style.setProperty('--border','#2a2a40');
+    document.documentElement.style.setProperty('--card-hover','#222240');
+    showToast('🌙','Тёмная тема');
+  }
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') {
+    closeModal('gameModal');
+    closeModal('loginModal');
+    closeFullscreen();
+  }
+  if(e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+});
+</script>
 </body>
 </html>
